@@ -1,0 +1,3 @@
+templates/20210308_235908_template.jpg
+templates/20211005_175839_template.jpg
+templates/20211005_175901_template.jpg
