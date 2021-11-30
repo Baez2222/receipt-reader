@@ -392,19 +392,6 @@ def spell_checker(textlist):
             address += highWord + " "
     print(address)
 
-            
-    
-    
-def get_item_box(im):
-    # im = cv2.imread(file_path)
-    imgray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
-    ret, thresh = cv2.threshold(im, 127, 255, 0)
-
-    contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    
-    imgcont = cv2.drawContours(im, contours, -1, (0, 255, 0),3)
-    cv2.imshow("cropped contours", cv2.resize(imgcont, (900, 1000)))
-    cv2.waitKey(0)
 
 
 
