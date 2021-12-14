@@ -4,6 +4,8 @@ import pytesseract
 import cv2
 
 from template_matching import template_matching
+from spellcheck import spell_check
+from item_ocr import get_item_box
 
 parser = argparse.ArgumentParser(description='Locating bounding box in the image')
 parser.add_argument('file', type=str,
@@ -20,7 +22,15 @@ if __name__ == "__main__":
     # step 2:
     # get address through template matching
     cropped = cv2.imread(crop_img_path)
-    print(pytesseract.image_to_string(cropped))
+    # print(pytesseract.image_to_string(cropped))
     
-    correct_bottom, correct_top, address = template_matching(cropped)
-    print(address)
+    correct_bottom, correct_top, addresslist = template_matching(cropped)
+    # for item in addresslist:
+    #     print(item)
+    
+    address = spell_check(addresslist)
+    
+    
+    msf = get_item_box(crop_img_path)
+    
+    print(address, msf)

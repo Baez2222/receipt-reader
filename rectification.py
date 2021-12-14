@@ -55,14 +55,28 @@ def order_rectpts(points):
     else:
         lowy = y2
         hiy = y1
-    print(lowx,lowy)
-    print(hix,hiy)
-    print()
+    # print(lowx,lowy)
+    # print(hix,hiy)
+    # print()
     
     return lowx, lowy, hix, hiy
 
 
-def find_largest_contour(im, method = 1):
+def find_largest_contour(im, method = 1, largest = True):
+    # img = Image.open(FILE_PATH)
+    # crop_img_path = os.path.join(BASE_PATH, os.path.basename(FILE_PATH))
+    # im = im.filter(ImageFilter.MedianFilter())
+    # enhancer = ImageEnhance.Contrast(img)
+    # img = enhancer.enhance(2)
+    # enhancer = ImageEnhance.Contrast(img)
+    # img = enhancer.enhance(2)
+    # enhancer = ImageEnhance.Contrast(img)
+    # img = enhancer.enhance(2)
+    
+    # img.save(crop_img_path)
+    
+    # img = cv2.imread(crop_img_path)
+    
     imgray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
     ret, thresh = cv2.threshold(imgray, 127, 255, 0)
 
@@ -72,19 +86,24 @@ def find_largest_contour(im, method = 1):
     # thresh1 = cv2.morphologyEx(thresh1, cvFILE_PATH2.MORPH_DILATE, kernel2)
 
 
-    contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    sorted_contours = sorted(contours, key=cv2.contourArea, reverse=True)
 
 
-    pageContour = [""]
-    max = 0
-    for i in contours:
-        if cv2.contourArea(i) > max:
-            pageContour[0] = i
-            max = cv2.contourArea(i)
+    # pageContour = [""]
+    # max = 0
+    # for i in contours:
+    #     if cv2.contourArea(i) > max:
+    #         pageContour[0] = i
+    #         max = cv2.contourArea(i)
     # x,y,w,h = cv.boundingRect(pageContour[0])
     # cv.rectangle(im, (x,y), (x+w, y+h), (0,255,0), 3)
-    rectangle = cv2.minAreaRect(pageContour[0])
-    ((x,y),(w,h),angle) = cv2.minAreaRect(pageContour[0])
+    if largest:
+        rectangle = cv2.minAreaRect(sorted_contours[0])
+        ((x,y),(w,h),angle) = cv2.minAreaRect(sorted_contours[0])
+    else:
+        rectangle = cv2.minAreaRect(sorted_contours[1])
+        ((x,y),(w,h),angle) = cv2.minAreaRect(sorted_contours[1])
 
 
     # convert the minAreaRect output to points
@@ -101,11 +120,11 @@ def find_largest_contour(im, method = 1):
             if _ != "":
                 corner_pts.append(_)
         rectangle_pts.append(corner_pts)
-    print(rectangle_pts)
+    # print(rectangle_pts)
     if method == 2:
         rectangle_pts.append(rectangle_pts[0])
         rectangle_pts.remove(rectangle_pts[0])
-        print(rectangle_pts)
+        # print(rectangle_pts)
     # crop_img = im[lowy:hiy, lowx:hix]
     
     # imgcont = cv2.drawContours(im, pageContour[0], -1, (0, 255, 0),3)
@@ -118,7 +137,6 @@ def find_largest_contour(im, method = 1):
     # cv2.rectangle(im, (int(rectangle_pts[3][0]), int(rectangle_pts[3][1])), (int(rectangle_pts[1][0]), int(rectangle_pts[1][1])), (0,255,0), 3)
     # cv2.imshow("cropped contours", cv2.resize(im, (900, 1000)))
     # cv2.waitKey(0)
-    
     return rectangle_pts
 
 
@@ -148,14 +166,14 @@ def crop_page(img, rectangle_pts, FILE_PATH):
     # kernel1 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (27, 27))
     # kernel2 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (13, 13))
     # thresh1 = cv2.morphologyEx(thresh, cv2.MORPH_ERODE, kernel1)
-    # thresh1 = cv2.morphologyEx(thresh1, cv2.MORPH_DILATE, kernel2)
+    # thresh1 = cv2.morphologyEx(thresh1, cv2.MORPH_DILATE, kernel2) 
 
 
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
     pageContour = [""]
     max = 0
-    print(len(contours))
+    # print(len(contours))
     for i in contours:
         if cv2.contourArea(i) > max:
             pageContour[0] = i
@@ -177,11 +195,11 @@ def crop_page(img, rectangle_pts, FILE_PATH):
     # contours must be of shape (n, 1, 2) and dtype integer
     pts = pts.reshape(-1, 1, 2)
     pts = pts.astype(int)
-    print(pts)
-    print((pts[0][0][0]))
-    print(str(pts[1][0][0]))
-    print(str(pts[0][0][1]))
-    print(str(pts[2][0][1]))
+    # print(pts)
+    # print((pts[0][0][0]))
+    # print(str(pts[1][0][0]))
+    # print(str(pts[0][0][1]))
+    # print(str(pts[2][0][1]))
     
     x1 = pts[0][0][0]
     x2 = 0
@@ -204,20 +222,24 @@ def crop_page(img, rectangle_pts, FILE_PATH):
     else:
         lowy = y2
         hiy = y1
-    print(lowx,lowy)
-    print(hix,hiy)
-    print()
+    # print(lowx,lowy)
+    # print(hix,hiy)
+    # print()
     crop_img = im[lowy:hiy, lowx:hix]
-    cv2.imshow("cropped", cv2.resize(crop_img, (800, 1000)))
-    cv2.waitKey(0)
+    # cv2.imshow("cropped", cv2.resize(crop_img, (800, 1000)))
+    # cv2.waitKey(0)
     # cv2.imshow("cropped", cv2.resize(im, (800, 1000)))
     crop_img_path = os.path.join(BASE_PATH, os.path.basename(FILE_PATH))
-    print(crop_img_path)
+    # print(crop_img_path)
     cv2.imwrite(crop_img_path, crop_img)
     
     
     im = Image.open(crop_img_path)
     # im = im.filter(ImageFilter.MedianFilter())
+    enhancer = ImageEnhance.Contrast(im)
+    im = enhancer.enhance(2)
+    enhancer = ImageEnhance.Contrast(im)
+    im = enhancer.enhance(2)
     enhancer = ImageEnhance.Contrast(im)
     im = enhancer.enhance(2)
     # im = im.convert('1')

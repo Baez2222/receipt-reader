@@ -1,5 +1,6 @@
 import cv2
 import copy
+from numpy.core.numeric import empty_like
 import pytesseract
 import nltk
 import numpy as np
@@ -7,10 +8,11 @@ import string
 import os
 
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
+textlist = []
 f = open("templates.txt", "r")
 templates = []
 for line in f:
-    templates.append(line)
+    templates.append(line.rstrip())
 
 
 def template_matching(im):
@@ -21,12 +23,8 @@ def template_matching(im):
     # im = cv2.imread('ticket_photos/20210622_123215.jpg')
 
     # pre process template
-
     for template in templates:
-        print(os.path.join(BASE_PATH, template))
-        im_ = cv2.imread("templates/20211005_175839_template.jpg")
-        # cv2.imshow("image", im_)
-        # cv2.waitKey(0)
+        im_ = cv2.imread(os.path.join(BASE_PATH, template))
         imgray_ = cv2.cvtColor(im_, cv2.COLOR_BGR2GRAY)
         ret_, thresh_ = cv2.threshold(imgray_, 127, 255, 0)
 
@@ -55,27 +53,15 @@ def template_matching(im):
                 top_left = max_loc
             bottom_right = (top_left[0] + w, top_left[1] + h)
             
-            correcttext = ocrtext(bottom_right, top_left, im)
-            
-            if correcttext != "":
-                break
-            
-            
-            # cv2.rectangle(im,top_left, bottom_right, 255, 2)
-            # # plt.subplot(121),
-            # plt.imshow(res,cmap = 'gray')
-            # plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
-            # # plt.subplot(122),
-            # plt.imshow(im,cmap = 'gray')
-            # plt.title('Detected Point'), plt.xticks([]), plt.yticks([])
-            # plt.suptitle(meth)
-            # # plt.savefig("rectified/13_template_matches.jpg")
-            # plt.show()
-            if correcttext != "":
-                correct_top = top_left
-                correct_bottom = bottom_right
-                break
-    return correct_bottom, correct_top, correcttext
+            lst = ocrtext(bottom_right, top_left, im)
+            if lst:
+                textlist.extend(lst)
+                
+        if textlist:
+            correct_top = top_left
+            correct_bottom = bottom_right
+            break
+    return correct_bottom, correct_top, textlist
 
 
 def ocrtext(bottom_right, top_left, cropped):
@@ -115,10 +101,10 @@ def ocrtext(bottom_right, top_left, cropped):
     text.append(pytesseract.image_to_string(crop_img))
     
     correct_top, correct_bottom = 0, 0
-    correct_text = ""
-    print("!!!!!!!!!!!!!!!!!!!!!!")
-    print(text)
-    print("!!!!!!!!!!!!!!!!!!!!!!")
+    # print("!!!!!!!!!!!!!!!!!!!!!!")
+    # print(text)
+    # print("!!!!!!!!!!!!!!!!!!!!!!")
+    temptext = []
     for i in text:
         # print(i)
         # lower case
@@ -131,16 +117,20 @@ def ocrtext(bottom_right, top_left, cropped):
         words = nltk.word_tokenize(curr)
         
         words = [word for word in words if len(word) > 1]
-        print(words)
+        # print(words)
         # spell = SpellChecker()
         # misspelled = spell.unknown(words)
 
-        
+        correct_text = False
         for word in words:
             if nltk.edit_distance(word, "ship") < 2:
-                correct_text = i
+                correct_text = True
+        
+        if correct_text:
+            temptext.append(words)
+        # print(text)
         # for word in misspelled:
             # possible.append(spell.correction(word))
             # print(spell.candidates(word))
-    
-    return correct_text
+    # print(temptext)
+    return temptext
