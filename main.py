@@ -31,6 +31,6 @@ if __name__ == "__main__":
     address = spell_check(addresslist)
     
     
-    msf = get_item_box(crop_img_path)
+    msf, items = get_item_box(crop_img_path)
     
-    print(address, msf)
+    print(address, msf, items)
