@@ -29,9 +29,9 @@ def get_item_box(FILE_PATH):
     # cv2.imshow("contours", cv2.resize(imgcont, (900, 1000)))
     # cv2.waitKey()
     
-    get_table_contour(img, FILE_PATH)
+    table = get_table_contour(img, FILE_PATH)
     
-    return get_msf(imgray)
+    return get_msf(imgray), get_items(table)
     
 
 def get_table_contour(im, FILE_PATH):
@@ -96,6 +96,35 @@ def crop_table(im, pts, FILE_PATH):
     # print(crop_img_path)
     # print(crop_img_path)
     cv2.imwrite(crop_img_path, crop_img)
+    
+def get_items(im):
+    items = []
+    # Perform text extraction
+    text = pytesseract.image_to_string(im, lang='eng', config='--psm 4')
+    # print(text)
+    # print(type(text))
+    for line in text.splitlines():
+        # print(i)
+        # lower case
+        curr = line.lower()
+        
+        # # remove punctuation
+        # curr = "".join([char for char in curr if char not in string.punctuation])
+
+        # tokenization
+        words = nltk.word_tokenize(curr)
+        
+        words = [word for word in words if len(word) > 1]
+        
+        # print(words)
+        if len(words) > 5:
+            count = 0
+            for word in words:
+                if word.isdigit():
+                    count += 1
+            if count > 4:
+                items.append(words)
+    return items
 
 def get_msf(im):
     msf = 0
